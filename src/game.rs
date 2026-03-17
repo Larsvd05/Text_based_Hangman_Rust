@@ -11,6 +11,7 @@ pub struct HangmanGame {
     wrong_guesses: u8,
     max_wrong_guesses: u8,
     difficulty: Difficulty,
+    game_over: bool,
 }
 
 impl HangmanGame {
@@ -22,7 +23,6 @@ impl HangmanGame {
         println!("You chose difficulty: {:?}", difficulty);
 
         let secret_word = user_interaction::ask_secret_word();
-        println!("You chose secret word: {:?}", secret_word);
 
         HangmanGame::new(&secret_word, difficulty)
     }
@@ -40,13 +40,54 @@ impl HangmanGame {
             wrong_guesses: 0,
             max_wrong_guesses,
             difficulty,
+            game_over: false,
         }
     }
 
     pub fn play(&mut self) {
-        loop {
-          let letter = user_interaction::ask_letter();
-          println!("You guessed: {}", letter);
+        while !self.game_over {
+            let mut letter;
+            loop {
+                // First check if this letter has been called before.
+                letter = user_interaction::ask_letter();
+                println!("You guessed: {}", letter);
+                if self.check_if_guessed_before(letter) {
+                    println!("You have already guessed this letter before, try again.");
+                } else {
+                    break;
+                }
+            }
+            self.check_guess_in_word(letter); // After the previous check, we can check if the letter exists in the word or not.
         }
+    }
+
+    fn check_if_guessed_before(&self, letter: char) -> bool {
+        self.guessed_letters.contains(&letter)
+    }
+
+    fn check_guess_in_word(&mut self, letter: char) {
+        self.guessed_letters.insert(letter);
+        if self.secret_word.contains(letter) {
+            println!("The word contains the letter '{}'!", letter);
+            if self.check_win() {
+                println!("Congratulations! You have won! The word was '{}'.", self.secret_word);
+                self.game_over = true;
+            }
+        } else {
+            println!("The word does not contain the letter '{}'.", letter);
+            self.wrong_guesses += 1;
+            if self.check_loss() {
+                println!("Game Over! The word was: '{}'", self.secret_word);
+                self.game_over = true;
+            }
+        }
+    }
+
+    fn check_win(&self) -> bool {
+        self.secret_word.chars().all(|c: char| self.guessed_letters.contains(&c))
+    }
+
+    fn check_loss(&self) -> bool {
+        self.wrong_guesses >= self.max_wrong_guesses
     }
 }

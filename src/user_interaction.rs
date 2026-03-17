@@ -1,6 +1,8 @@
 use std::io;
 use crate::common::Difficulty as Difficulty;
 
+use rpassword::read_password;
+
 pub fn ask_difficulty() -> Difficulty {
     loop {
         println!("Enter E for Easy, M for Medium, H for Hard:");
@@ -24,9 +26,8 @@ pub fn ask_difficulty() -> Difficulty {
 
 pub fn ask_secret_word() -> String {
     loop {
-        println!("Enter the secret word:");
-        let mut input = String::new();
-        io::stdin().read_line(&mut input).expect("Failed to read line");
+        println!("Enter the secret word (this will be hidden):");
+        let input = read_password().expect("Failed to read the secret word");
         let input = input.trim();
         if !input.is_empty() {
             break input.to_lowercase();
@@ -41,12 +42,12 @@ pub fn ask_letter() -> char {
         let mut input = String::new();
         io::stdin().read_line(&mut input).expect("Failed to read line");
         let input = input.trim();
-        
+
         if input.is_empty() {
             println!("Invalid input, the input can't be empty.");
             continue;
         }
-        
+
         if input.len() == 1 {
             if let Some(letter) = input.chars().next() {
                 if letter.is_alphabetic() {

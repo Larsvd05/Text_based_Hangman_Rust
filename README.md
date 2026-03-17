@@ -1,8 +1,11 @@
 # README for text based hangman written in Rust
+
 ## Background
+
 This project was written to both improve my knowledge of coding in Rust, but also act as an example of what my code looks like to show to companies.
 
 ## User manual for running the program
+
 If you don't have the executable, then you need to build it yourself.
 A requirement for this is that you have Rust already installed on your system. This can be checked by using `cargo --version`, which should return a valid version (in my case cargo 1.94.0).
 
