@@ -15,6 +15,19 @@ pub struct HangmanGame {
 }
 
 impl HangmanGame {
+    const DISPLAY_STAGES: [&str; 10] = [
+        "      |\n      |\n      |\n      |\n      |\n=========",
+        "      +\n      |\n      |\n      |\n      |\n      |\n=========",
+        "  +---+\n      |\n      |\n      |\n      |\n      |\n=========",
+        "  +---+\n  |   |\n      |\n      |\n      |\n      |\n=========",
+        "  +---+\n  |   |\n  O   |\n      |\n      |\n      |\n=========",
+        "  +---+\n  |   |\n  O   |\n  |   |\n      |\n      |\n=========",
+        "  +---+\n  |   |\n  O   |\n /|   |\n      |\n      |\n=========",
+        "  +---+\n  |   |\n  O   |\n /|\\  |\n      |\n      |\n=========",
+        "  +---+\n  |   |\n  O   |\n /|\\  |\n /    |\n      |\n=========",
+        "  +---+\n  |   |\n  O   |\n /|\\  |\n / \\  |\n      |\n=========",
+    ];
+
     pub fn setup() -> Self {
         println!("Welcome to Hangman!");
         println!("Choose difficulty: Easy (10 guesses), Medium (8 guesses), Hard (6 guesses)");
@@ -58,6 +71,9 @@ impl HangmanGame {
                 }
             }
             self.check_guess_in_word(letter); // After the previous check, we can check if the letter exists in the word or not.
+            if (!self.game_over) {
+                self.display();
+            }
         }
     }
 
@@ -89,5 +105,22 @@ impl HangmanGame {
 
     fn check_loss(&self) -> bool {
         self.wrong_guesses >= self.max_wrong_guesses
+    }
+
+    fn display(&self) {
+        if self.wrong_guesses <= self.max_wrong_guesses {
+            let difference = (HangmanGame::DISPLAY_STAGES.len() as u8) - self.max_wrong_guesses; // Calculate the difference so this is dynamic for all difficulties.
+            println!(
+                "{}",
+                HangmanGame::DISPLAY_STAGES[(self.wrong_guesses - 1 + difference) as usize]
+            );
+        }
+        print!("Guessed letters: ");
+        let mut letters: Vec<char> = self.guessed_letters.iter().copied().collect();
+        letters.sort();
+        for letter in letters {
+            print!("{}", letter);
+        }
+        println!();
     }
 }
