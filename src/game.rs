@@ -58,6 +58,7 @@ impl HangmanGame {
     }
 
     pub fn play(&mut self) {
+        self.display();
         while !self.game_over {
             let mut letter;
             loop {
@@ -71,7 +72,7 @@ impl HangmanGame {
                 }
             }
             self.check_guess_in_word(letter); // After the previous check, we can check if the letter exists in the word or not.
-            if (!self.game_over) {
+            if !self.game_over {
                 self.display();
             }
         }
@@ -88,6 +89,8 @@ impl HangmanGame {
             if self.check_win() {
                 println!("Congratulations! You have won! The word was '{}'.", self.secret_word);
                 self.game_over = true;
+            } else {
+                println!("{}", self.get_masked_word());
             }
         } else {
             println!("The word does not contain the letter '{}'.", letter);
@@ -95,8 +98,27 @@ impl HangmanGame {
             if self.check_loss() {
                 println!("Game Over! The word was: '{}'", self.secret_word);
                 self.game_over = true;
+            } else {
+            println!("{}", self.get_masked_word());
             }
         }
+    }
+
+    fn get_masked_word(&self) -> String {
+        let char_map_processed = self.secret_word.chars().map(|letter| {
+            if self.guessed_letters.contains(&letter) {
+                return letter; // letter can be revealed
+            } else {
+                return '_'; // letter needs to be unrevealed
+            }
+        }); // See the documentation for more info on how maps work to iterate and change values: https://doc.rust-lang.org/std/iter/struct.Map.html.
+       
+        // Collect and then join the values with a space to seperate it, otherwise it becomes less readable.
+        let result = char_map_processed
+            .map(|c| c.to_string())
+            .collect::<Vec<_>>()
+            .join(" ");
+        result
     }
 
     fn check_win(&self) -> bool {
@@ -111,8 +133,8 @@ impl HangmanGame {
         if self.wrong_guesses <= self.max_wrong_guesses {
             let difference = (HangmanGame::DISPLAY_STAGES.len() as u8) - self.max_wrong_guesses; // Calculate the difference so this is dynamic for all difficulties.
             println!(
-                "{}",
-                HangmanGame::DISPLAY_STAGES[(self.wrong_guesses - 1 + difference) as usize]
+                "\n{}",
+                HangmanGame::DISPLAY_STAGES[(self.wrong_guesses + difference) as usize]
             );
         }
         print!("Guessed letters: ");
