@@ -60,3 +60,33 @@ pub fn ask_letter() -> char {
         println!("Invalid input, please enter only a single letter.");
     }
 }
+
+pub fn ask_play_again() -> bool {
+    loop {
+        println!("Do you want to play again? Enter (y/n): ");
+        let mut input = String::new();
+        io::stdin().read_line(&mut input).expect("Failed to read line");
+        let input = input.trim();
+
+        if input.is_empty() {
+            println!("Invalid input, the input can't be empty.");
+            continue;
+        }
+
+        if input.len() == 1 {
+            match input.to_lowercase().as_str() {
+                "y" => {
+                    break true
+                }
+                "n" => {
+                    break false 
+                }
+                _ => {
+                    println!("Invalid input, please enter 'y' for yes or 'n' for no.");
+                    continue;
+                }
+            }
+        }
+        println!("Invalid input, please enter only a single letter. Either 'y' for yes or 'n' for no.");
+    }
+}

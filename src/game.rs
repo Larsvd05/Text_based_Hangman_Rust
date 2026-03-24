@@ -15,7 +15,8 @@ pub struct HangmanGame {
 }
 
 impl HangmanGame {
-    const DISPLAY_STAGES: [&str; 10] = [
+    const DISPLAY_STAGES: [&str; 11] = [
+        "\n=========",
         "      |\n      |\n      |\n      |\n      |\n=========",
         "      +\n      |\n      |\n      |\n      |\n      |\n=========",
         "  +---+\n      |\n      |\n      |\n      |\n      |\n=========",
@@ -29,7 +30,7 @@ impl HangmanGame {
     ];
 
     pub fn setup() -> Self {
-        println!("Welcome to Hangman!");
+        println!("Welcome to Hangman!\n");
         println!("Choose difficulty: Easy (10 guesses), Medium (8 guesses), Hard (6 guesses)");
 
         let difficulty = user_interaction::ask_difficulty();
@@ -38,6 +39,23 @@ impl HangmanGame {
         let secret_word = user_interaction::ask_secret_word();
 
         HangmanGame::new(&secret_word, difficulty)
+    }
+
+    fn reset(&mut self) {
+        println!("Choose difficulty: Easy (10 guesses), Medium (8 guesses), Hard (6 guesses)");
+
+        let difficulty = user_interaction::ask_difficulty();
+        println!("You chose difficulty: {:?}", difficulty);
+
+        let secret_word = user_interaction::ask_secret_word();
+
+        self.secret_word = secret_word.to_string();
+        self.guessed_letters = HashSet::new();
+        self.wrong_guesses = 0;
+        self.max_wrong_guesses;
+        self.difficulty;
+        self.game_over = false;
+        self.setDifficulty(difficulty);
     }
 
     // Constructor (associated function)
@@ -76,6 +94,7 @@ impl HangmanGame {
                 self.display();
             }
         }
+        self.display();
     }
 
     fn check_if_guessed_before(&self, letter: char) -> bool {
@@ -87,7 +106,7 @@ impl HangmanGame {
         if self.secret_word.contains(letter) {
             println!("The word contains the letter '{}'!", letter);
             if self.check_win() {
-                println!("Congratulations! You have won! The word was '{}'.", self.secret_word);
+                println!("Congratulations! You have won! The word was '{}'.\n\n", self.secret_word);
                 self.game_over = true;
             } else {
                 println!("{}", self.get_masked_word());
@@ -96,10 +115,10 @@ impl HangmanGame {
             println!("The word does not contain the letter '{}'.", letter);
             self.wrong_guesses += 1;
             if self.check_loss() {
-                println!("Game Over! The word was: '{}'", self.secret_word);
+                println!("Game Over! The word was: '{}'.\n", self.secret_word);
                 self.game_over = true;
             } else {
-            println!("{}", self.get_masked_word());
+                println!("{}", self.get_masked_word());
             }
         }
     }
@@ -112,7 +131,7 @@ impl HangmanGame {
                 return '_'; // letter needs to be unrevealed
             }
         }); // See the documentation for more info on how maps work to iterate and change values: https://doc.rust-lang.org/std/iter/struct.Map.html.
-       
+
         // Collect and then join the values with a space to seperate it, otherwise it becomes less readable.
         let result = char_map_processed
             .map(|c| c.to_string())
@@ -121,17 +140,12 @@ impl HangmanGame {
         result
     }
 
-    fn check_win(&self) -> bool {
-        self.secret_word.chars().all(|c: char| self.guessed_letters.contains(&c))
-    }
-
-    fn check_loss(&self) -> bool {
-        self.wrong_guesses >= self.max_wrong_guesses
-    }
-
     fn display(&self) {
         if self.wrong_guesses <= self.max_wrong_guesses {
-            let difference = (HangmanGame::DISPLAY_STAGES.len() as u8) - self.max_wrong_guesses; // Calculate the difference so this is dynamic for all difficulties.
+            let mut difference = ((HangmanGame::DISPLAY_STAGES.len()-1) as u8) - self.max_wrong_guesses; // Calculate the difference so this is dynamic for all difficulties.
+            if difference == 1 {
+                difference = difference -1; // Avoid overflow due. The -1 needs to be here, since index [0] is 0, but otherwise you jump to [2], which is index 3.
+            }
             println!(
                 "\n{}",
                 HangmanGame::DISPLAY_STAGES[(self.wrong_guesses + difference) as usize]
@@ -144,5 +158,33 @@ impl HangmanGame {
             print!("{}", letter);
         }
         println!();
+    }
+
+    fn check_win(&self) -> bool {
+        self.secret_word.chars().all(|c: char| self.guessed_letters.contains(&c))
+    }
+
+    fn check_loss(&self) -> bool {
+        self.wrong_guesses >= self.max_wrong_guesses
+    }
+
+    pub fn play_again(&mut self) {
+        let play_again_bool = user_interaction::ask_play_again();
+        if play_again_bool {
+            self.reset();
+            self.play();
+        } else {
+            println!("Thanks for playing, Goodbye!");
+            std::process::exit(0);
+        }
+    }
+
+    fn setDifficulty(&mut self, difficulty: Difficulty) {
+        self.difficulty = difficulty;
+        self.max_wrong_guesses = match difficulty {
+            Difficulty::Easy => 10,
+            Difficulty::Medium => 8,
+            Difficulty::Hard => 6,
+        };
     }
 }
